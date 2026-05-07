@@ -1,0 +1,26 @@
+# SPM build artifacts
+.build/
+.swiftpm/
+Package.pins
+
+# Xcode (in case anyone generates a project locally — do not commit it)
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+
+# macOS
+.DS_Store
+._*
+
+# Editor / IDE
+.vscode/
+*.swp
+*~
+
+# History log written at runtime (in case it ever lands inside the repo by mistake)
+history.log
+history.log.old
+
+# Note: Package.resolved IS checked in (no external deps yet, so it may not exist —
+# but if it appears, it should be tracked).
