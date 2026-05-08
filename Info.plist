@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Identity -->
+    <key>CFBundleIdentifier</key>
+    <string>com.ashokpaudel.MacGuard</string>
+    <key>CFBundleName</key>
+    <string>MacGuard</string>
+    <key>CFBundleDisplayName</key>
+    <string>MacGuard</string>
+    <key>CFBundleExecutable</key>
+    <string>MacGuard</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <!-- Versioning — build-release.sh overwrites these at package time -->
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+
+    <!-- Platform -->
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+
+    <!-- Menu-bar-only: suppress the dock icon -->
+    <key>LSUIElement</key>
+    <true/>
+
+    <!-- Notifications: "alert" style keeps the banner on screen until the user
+         dismisses it, which is required for the Kill Now / Ignore action buttons
+         to be reachable. "banner" style auto-dismisses and drops the actions. -->
+    <key>NSUserNotificationAlertStyle</key>
+    <string>alert</string>
+
+    <!-- Human-readable purpose strings shown in System Settings > Privacy -->
+    <key>NSAppleEventsUsageDescription</key>
+    <string>MacGuard does not use Apple Events.</string>
+</dict>
+</plist>

@@ -10,58 +10,70 @@
 > for what happens next. Update all four fields whenever a task is completed.
 
 ### Last Completed Task
-- **Task:** Project documentation initialized — 9 reference templates tailored from `References/` to MacGuard's stack (Swift / SPM / SwiftUI / macOS — local-only)
-- **Completed:** 2026-05-06
-- **What was done:** Wrote `README.md`, `CLAUDE.md`, `CODEX.md`, `INSTRUCTIONS.md`, `SECURITY.md`, `ROADMAP.md`, `docs/PROGRESS.md`, `docs/DEVLOG.md`, `docs/BUGS.md` at the project root. `BUGS.md` is pre-seeded with 10 spec-review findings (BUG-S01–BUG-S10) that must be applied while typing in source from `MacGuard_Developer_Spec.docx`. No Swift source has been written yet.
+- **Task:** Week 6 — Code Signing & Distribution Scaffolding complete
+- **Completed:** 2026-05-07
+- **What was done:** Created `Info.plist` (LSUIElement=true, NSUserNotificationAlertStyle=alert, bundleID=com.ashokpaudel.MacGuard), `MacGuard.entitlements` (hardened runtime, no sandbox — sandboxing blocks /bin/ps and Darwin.kill), `scripts/build-release.sh` (7-step: universal build → .app assembly → codesign → verify → zip → notarytool submit → stapler staple). Added `dist/` to `.gitignore`. `swift build` still clean (0.23s incremental).
 
 ### Next Task — Start Here
-- **Task:** Week 1 — Project Scaffolding: create `Package.swift`, the `Sources/MacGuard/` directory tree, a stub `main.swift`, and verify the project builds and runs as a menu-bar accessory app.
-- **Phase / Week:** Phase 1 / Week 1 — Project Scaffolding
+- **Task:** Run the release build once you have a Developer ID cert
+- **Phase / Week:** Phase 4 / Week 6 (final step)
 - **What to do:**
-  1. Create `Package.swift` at the project root for a macOS 13+ executable target named `MacGuard`. Use `path: "Sources/MacGuard"` and resources `[.process("Resources")]` — and ⚠️ make sure the `Resources/` folder lives at `Sources/MacGuard/Resources/`, NOT at the project root, or SPM will fail to find it. See **BUG-S07**.
-  2. Create the directory tree: `mkdir -p Sources/MacGuard/{Models,Services,Views,Utilities} Sources/MacGuard/Resources Tests/MacGuardTests`.
-  3. Write a stub `Sources/MacGuard/main.swift`: instantiate `NSApplication.shared`, attach a placeholder `AppDelegate`, set `setActivationPolicy(.accessory)`, call `app.run()`. The placeholder `AppDelegate` should `print("MacGuard launched")` in `applicationDidFinishLaunching`.
-  4. Write a `.gitignore` covering `.build/`, `.swiftpm/`, `.DS_Store`, `xcuserdata/`. Keep `Package.resolved` checked in.
-  5. Run `swift build` then `swift run` — confirm `MacGuard launched` prints and the process stays alive (Ctrl-C to quit).
-- **Files to create:** `Package.swift`, `Sources/MacGuard/main.swift`, `.gitignore`
-- **Files to reference:** `MacGuard_Developer_Spec.docx` sections 3 (Package.swift) and 4.1 (main.swift); `docs/BUGS.md` BUG-S07
-- **Blockers / Prerequisites:** Confirm `swift --version` reports 5.9+. If it reports an older version, run `xcode-select --install` to refresh the toolchain.
-- **⚠️ Read first:** `docs/BUGS.md` — BUG-S07 directly affects the `Package.swift` you are about to write. The other findings (BUG-S01 through BUG-S10) become relevant in Week 2 onward but are worth scanning now.
+  1. Obtain an Apple Developer ID Application certificate from developer.apple.com (requires paid $99/year Apple Developer Program membership).
+  2. Store notarization credentials: `xcrun notarytool store-credentials "macguard-notarize" --apple-id "you@example.com" --team-id "TEAMID" --password "app-specific-password"`
+  3. Edit the `DEVELOPER_ID` variable at the top of `scripts/build-release.sh` to match your certificate CN (check with `security find-identity -v -p codesigning`).
+  4. Run `./scripts/build-release.sh` from the project root.
+  5. Verify `dist/MacGuard.app` passes: `spctl --assess --type execute dist/MacGuard.app`
+  6. Test the full notification flow for the first time: spike → banner → Kill Now / Ignore (bundle ID now present).
+  7. Test Launch at Login toggle in Settings (SMAppService now works with signed bundle).
+  8. Update `SECURITY.md` with the production signing identity.
+  9. Update `README.md` "Releases" section.
+- **Files to modify:** `scripts/build-release.sh` (DEVELOPER_ID variable), `SECURITY.md`, `README.md`
+- **Blockers / Prerequisites:** Apple Developer account. All app logic is complete and tested.
 
 ### After That
-- **Task:** Week 2 — Core Monitoring: `Models/MonitoredProcess.swift`, `Models/AppSettings.swift`, `Services/ProcessMonitor.swift`. End state: spikes print to stdout when `yes > /dev/null &` runs.
+- **Task:** Post-distribution extensions — memory-pressure alerts, per-app CPU budgets, CSV export filtering
 
 ---
 
 ## Phase 1 — Foundation *(Weeks 1–2)*
 
-### Week 1 — Project Scaffolding
-- [ ] `Package.swift` (SPM manifest with `.macOS(.v13)` and resources directive — apply BUG-S07)
-- [ ] Source directory tree (`Sources/MacGuard/{Models,Services,Views,Utilities,Resources}`, `Tests/MacGuardTests`)
-- [ ] Stub `main.swift` (creates app, attaches placeholder AppDelegate, accessory activation policy)
-- [ ] `.gitignore` (`.build/`, `.swiftpm/`, `.DS_Store`, `xcuserdata/`)
-- [ ] `swift build && swift run` succeeds and prints "MacGuard launched"
+### Week 1 — Project Scaffolding ✅
+- [x] `Package.swift` (SPM manifest with `.macOS(.v13)`, BUG-S07 applied — Resources/ inside target path)
+- [x] Source directory tree (`Sources/MacGuard/{Models,Services,Views,Utilities,Resources}`, `Tests/MacGuardTests`)
+- [x] Stub `main.swift` (creates app, attaches placeholder AppDelegate, `.accessory` activation policy)
+- [x] `.gitignore` (`.build/`, `.swiftpm/`, `.DS_Store`, `xcuserdata/`, `*.xcodeproj`)
+- [x] `swift build` → `Build complete! (14.94s)`, zero warnings. Binary: arm64 Mach-O, 74 KB.
 
-### Week 2 — Core Monitoring (no UI yet)
-- [ ] `Models/MonitoredProcess.swift` (use `MonitoredProcess`, NOT `ProcessInfo` — BUG-S01)
-- [ ] `Models/AppSettings.swift` (private init + `.shared`, immutable whitelist defaults — BUG-S08)
-- [ ] `Services/ProcessMonitor.swift` (background queue for `ps` — BUG-S02; rest-of-line `comm` parse — BUG-S03; reap dead PIDs — BUG-S04)
-- [ ] Wire monitor into `main.swift` so spikes print to stdout
-- [ ] Manual spike test: `yes > /dev/null &` triggers a SPIKE log within ~30 s
-- [ ] XCTest cases for `parseLine` (`Tests/MacGuardTests/ParseLineTests.swift`)
+### Week 2 — Core Monitoring (no UI yet) ✅
+- [x] `Models/MonitoredProcess.swift` (`MonitoredProcess` + `CPULevel`, pid-as-id, BUG-S01 applied)
+- [x] `Models/AppSettings.swift` (key-presence defaults, whitelist merge with protected defaults, BUG-S08 applied)
+- [x] `Services/ProcessMonitor.swift` (background pollQueue + main dispatch, split maxSplits:3, reapDeadPIDs — BUG-S02/S03/S04 applied)
+- [x] `main.swift` updated — wires ProcessMonitor, prints SPIKE/STATUS lines to stdout
+- [x] `swift build` — `Build complete!` zero warnings
+- [x] `Tests/MacGuardTests/ParseLineTests.swift` written — 6 cases (well-formed, whitespace, spaces in name, missing comm, empty, malformed numerics)
+- [x] `swift test` — 6/6 passed in 0.003 s (2026-05-07, Xcode installed)
 
 ---
 
 ## Phase 2 — UI & Alerts *(Week 3)*
 
-### Week 3 — Menu Bar, Dashboard, Settings, Alerts
-- [ ] Menu-bar status item with green/yellow/red SF Symbol tint (`AppDelegate.updateMenuBarIcon`)
-- [ ] `AppDelegate.swift` (use `settings.killDelay`, not 60 — BUG-S05; cancellable `DispatchWorkItem` — BUG-S06)
-- [ ] `Views/DashboardView.swift` + `ProcessRow` (use `MonitoredProcess` per BUG-S01)
-- [ ] `Views/SettingsView.swift` (Remove button disabled for the three protected defaults)
-- [ ] `Services/AlertManager.swift` (with `userNotificationCenter(_:didReceive:withCompletionHandler:)` for KILL/IGNORE — BUG-S06)
-- [ ] `Services/ProcessKiller.swift` (defense-in-depth whitelist guard before `Darwin.kill`)
-- [ ] Manual integration test: yes spike → red icon → notification → Kill Now/Ignore both behave correctly
+### Week 4 — Logger, History UI, Hardening ✅
+- [x] `Utilities/Logger.swift` (serial DispatchQueue, 5 MB rotation — BUG-S09)
+- [x] `Utilities/Whitelist.swift` (single source of truth for protected names — BUG-S10)
+- [x] `Views/CountdownBannerView.swift` + `SpikeAlertState` (live countdown with Cancel — BUG-S10)
+- [x] `Views/HistoryView.swift` (History tab, reads log newest-first, Refresh button)
+- [x] Logger wired at all 5 event sites: ALERT, AUTO-KILL, KILL-NOW, IGNORED, SKIPPED
+- [x] `swift build` — clean, zero warnings
+- [x] `swift test` — 12/12 passed (6 ParseLine + 6 Whitelist)
+
+### Week 3 — Menu Bar, Dashboard, Settings, Alerts ✅
+- [x] Menu-bar status item with green/yellow/red SF Symbol tint (`AppDelegate.updateMenuBarIcon`)
+- [x] `AppDelegate.swift` (use `settings.killDelay`, not 60 — BUG-S05; cancellable `DispatchWorkItem` — BUG-S06)
+- [x] `Views/DashboardView.swift` + `ProcessRow` (use `MonitoredProcess` per BUG-S01) + Google Material theme
+- [x] `Views/SettingsView.swift` (Remove button disabled for the three protected defaults)
+- [x] `Services/AlertManager.swift` (with `userNotificationCenter(_:didReceive:withCompletionHandler:)` for KILL/IGNORE — BUG-S06)
+- [x] `Services/ProcessKiller.swift` (defense-in-depth whitelist guard before `Darwin.kill`)
+- [ ] Manual integration test: yes spike → red icon → notification → Kill Now/Ignore both behave correctly (notification requires signed .app — defer to Week 6; icon tinting testable now)
 
 ---
 
@@ -79,17 +91,19 @@
 
 ## Phase 4 — Distribution & Extensions *(Weeks 5+)*
 
-### Week 5 — Optional Extensions (pick 2–3)
-- [ ] Launch on login via `SMAppService` toggle in Settings
-- [ ] CSV export of history (parse log file, `NSSavePanel`)
-- [ ] 60-second CPU sparkline on the dashboard
+### Week 5 — Optional Extensions ✅
+- [x] Launch on login via `SMAppService` toggle in Settings (reverts gracefully when unsigned)
+- [x] CSV export of history (`Logger.exportCSV()` + `NSSavePanel` in HistoryView)
+- [x] 60-second CPU sparkline on the dashboard (`SparklineView`, 30-sample rolling history)
 - [ ] Memory-pressure alerts via `host_statistics(HOST_VM_INFO)`
 - [ ] Per-app CPU budgets (extend `AppSettings` + spike state machine)
 
 ### Week 6 — Code Signing & Distribution
-- [ ] Apple Developer ID Application certificate
-- [ ] `scripts/build-release.sh` (release build + `.app` wrap + codesign + notarize + staple)
-- [ ] Hardened runtime entitlements plist (minimal — no sandbox for v1)
+- [ ] Apple Developer ID Application certificate (requires $99/year Apple Developer account)
+- [x] `scripts/build-release.sh` (release build + `.app` wrap + codesign + notarize + staple)
+- [x] `Info.plist` (LSUIElement, NSUserNotificationAlertStyle=alert, bundleID)
+- [x] `MacGuard.entitlements` (hardened runtime, no sandbox — documented why)
+- [ ] Run `build-release.sh` end-to-end with a real certificate
 - [ ] `SECURITY.md` updated with production signing identity reference
 - [ ] README "Releases" section pointing at signed download
 

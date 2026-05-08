@@ -1,26 +1,75 @@
-# SPM build artifacts
+# ─── Swift Package Manager ────────────────────────────────────────────────────
 .build/
 .swiftpm/
 Package.pins
 
-# Xcode (in case anyone generates a project locally — do not commit it)
+# Package.resolved IS checked in — it pins dependency versions so every
+# contributor gets an identical build. (MacGuard has no external deps yet,
+# so it may not exist. If it appears, track it.)
+
+# ─── Xcode ────────────────────────────────────────────────────────────────────
+# MacGuard is SPM-only. Do not commit generated Xcode projects.
 *.xcodeproj/
 *.xcworkspace/
 xcuserdata/
 DerivedData/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
 
-# macOS
+# ─── macOS system files ───────────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
 ._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+.fseventsd
+.VolumeIcon.icns
+Icon$'\r'
 
-# Editor / IDE
+# ─── Editor / IDE ─────────────────────────────────────────────────────────────
+# VS Code (swift extension settings are user-specific, not project config)
 .vscode/
+
+# JetBrains (AppCode, CLion)
+.idea/
+*.iml
+
+# Nova
+.nova/
+
+# Vim / Emacs swap files
 *.swp
+*.swo
 *~
+\#*\#
+.#*
 
-# History log written at runtime (in case it ever lands inside the repo by mistake)
+# ─── Build & test artifacts ───────────────────────────────────────────────────
+# Xcode test result bundles
+*.xcresult
+.test_results/
+
+# Crash and diagnostic reports generated during testing
+*.ips
+*.crash
+
+# ─── Distribution artifacts ───────────────────────────────────────────────────
+# Built by scripts/build-release.sh — never commit signed binaries or zips
+dist/
+
+# ─── Runtime files written by MacGuard itself ─────────────────────────────────
+# The live log lives in ~/Library/Application Support/MacGuard/ at runtime.
+# These entries are a safeguard in case someone symlinks or copies logs here.
 history.log
-history.log.old
+history.log.1
 
-# Note: Package.resolved IS checked in (no external deps yet, so it may not exist —
-# but if it appears, it should be tracked).
+# ─── Sensitive / environment files ────────────────────────────────────────────
+# MacGuard has no API keys or .env files, but block them as a safety net.
+.env
+.env.*
+*.pem
+*.p12
+*.cer

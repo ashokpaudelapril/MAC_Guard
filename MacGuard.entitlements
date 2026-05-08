@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    MacGuard hardened-runtime entitlements (no App Sandbox).
+
+    WHY NO SANDBOX:
+    The App Sandbox would block both /bin/ps (child process execution) and
+    Darwin.kill(pid, SIGKILL) (sending signals to arbitrary PIDs). MacGuard's
+    core functionality requires both. Version 1 ships without a sandbox;
+    a future version may adopt it with com.apple.security.temporary-exception.mach-lookup
+    if Apple grants the exception for process management tools.
+
+    WHAT IS ENABLED:
+    Only the minimum flags required to pass Gatekeeper's hardened-runtime checks
+    while keeping the kill path and ps invocation working. All three flags below
+    are false (disabled), which is correct — we are deliberately NOT requesting
+    any expanded capabilities beyond the default hardened runtime.
+-->
+<plist version="1.0">
+<dict>
+    <!-- Disallow JIT — MacGuard has no JIT-compiled code. Keeping false is
+         the secure default and is required for notarization. -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <false/>
+
+    <!-- Disallow unsigned executable memory pages. False = secure default. -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <false/>
+
+    <!-- Enforce library validation — only load Apple-signed or
+         same-team-signed dylibs. False = library validation IS enforced. -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <false/>
+</dict>
+</plist>
